@@ -18,16 +18,13 @@
     .catalog-tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .ctag { font-size: 11px; padding: 3px 10px; border-radius: 4px; font-weight: 500; background: rgba(255,107,0,0.15); color: #FF6B00; border: 1px solid rgba(255,107,0,0.3); }
     .card { background: #fff; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid #e5e5e5; border-top: 3px solid #FF6B00; }
-    .acesso-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; }
-    .acesso-box h2 { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .acesso-box p { font-size: 13px; color: #888; margin-bottom: 1rem; }
     .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FF6B00; border-top: 1px solid #f0f0f0; padding-top: 1.25rem; margin-top: 1.25rem; margin-bottom: 1rem; }
     .section-title:first-child { border-top: none; padding-top: 0; margin-top: 0; }
     .field { margin-bottom: 1rem; }
     .field:last-child { margin-bottom: 0; }
     label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
     .field-note { font-size: 11px; color: #aaa; margin-top: 5px; }
-    select, textarea, input[type="text"], input[type="email"], input[type="url"] { width: 100%; padding: 10px 12px; font-size: 14px; background: #fafafa; color: #1a1a1a; border: 1px solid #ddd; border-radius: 6px; outline: none; font-family: inherit; transition: border-color 0.15s; }
+    select, textarea, input[type="text"], input[type="url"] { width: 100%; padding: 10px 12px; font-size: 14px; background: #fafafa; color: #1a1a1a; border: 1px solid #ddd; border-radius: 6px; outline: none; font-family: inherit; transition: border-color 0.15s; }
     select:focus, textarea:focus, input:focus { border-color: #FF6B00; background: #fff; }
     textarea { resize: vertical; line-height: 1.6; }
     .source-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -75,13 +72,7 @@
         <p>Divisão Jurídica · Uso interno do time comercial</p>
       </div>
     </div>
-    <div class="acesso-box">
-      <h2>Seu e-mail corporativo</h2>
-      <p>Digite seu e-mail para acessar a ferramenta.</p>
-      <div class="field">
-        <input type="email" id="email" placeholder="nome@thomsonreuters.com" />
-      </div>
-    </div>
+
     <div class="catalog-preview">
       <div class="catalog-preview-title">Portfólio jurídico carregado · 12 soluções</div>
       <div class="catalog-tags">
@@ -99,6 +90,7 @@
         <span class="ctag">Teses Jurídicas</span>
       </div>
     </div>
+
     <div class="card">
       <div class="section-title">Contexto do prospect</div>
       <div class="field">
@@ -110,7 +102,7 @@
         </div>
       </div>
       <div id="campo-url" class="field">
-        <label>URL do site do prospect</label>
+        <label>URL do site ou página do prospect</label>
         <input type="url" id="url" placeholder="https://www.escritoriojuridico.com.br" />
         <p class="field-note">A ferramenta vai ler o site automaticamente e usar o conteúdo para personalizar a abordagem.</p>
       </div>
@@ -148,9 +140,11 @@
       </div>
       <button class="btn-gerar" id="btn" onclick="gerar()">Gerar abordagem + indicação de solução →</button>
     </div>
+
     <div id="result"></div>
     <div class="footer">Thomson Reuters Brasil · Divisão Jurídica · <span>Uso interno</span></div>
   </div>
+
   <script>
     let tabAtual = 'url';
     function setTab(tab) {
@@ -161,27 +155,29 @@
       document.getElementById('campo-url').style.display = (tab === 'url' || tab === 'ambos') ? 'block' : 'none';
       document.getElementById('campo-texto').style.display = (tab === 'texto' || tab === 'ambos') ? 'block' : 'none';
     }
+
     async function gerar() {
-      const email = document.getElementById('email').value.trim();
       const url = document.getElementById('url').value.trim();
       const conteudo = document.getElementById('conteudo').value.trim();
       const persona = document.getElementById('persona').value.trim();
       const canal = document.getElementById('canal').value;
       const objetivo = document.getElementById('objetivo').value;
       const contexto = document.getElementById('contexto').value.trim();
-      if (!email) { alert('Digite seu e-mail corporativo.'); return; }
+
       if (!persona) { alert('Informe a persona que você vai abordar.'); return; }
       if (!url && !conteudo) { alert('Informe o link do site ou cole o conteúdo do prospect.'); return; }
       if ((tabAtual === 'url' || tabAtual === 'ambos') && url && !url.startsWith('http')) { alert('A URL precisa começar com http:// ou https://'); return; }
+
       const btn = document.getElementById('btn');
       btn.disabled = true;
       btn.innerHTML = url ? '<span class="spinner"></span>Lendo o site e gerando abordagem...' : '<span class="spinner"></span>Analisando e gerando...';
       document.getElementById('result').innerHTML = '';
+
       try {
         const res = await fetch('/api/gerar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, url, conteudo, persona, canal, objetivo, contexto })
+          body: JSON.stringify({ url, conteudo, persona, canal, objetivo, contexto })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro desconhecido');
@@ -189,9 +185,11 @@
       } catch (e) {
         document.getElementById('result').innerHTML = `<div class="error-box"><strong>Erro.</strong><br>${e.message}</div>`;
       }
+
       btn.disabled = false;
       btn.innerHTML = 'Gerar abordagem + indicação de solução →';
     }
+
     function renderResult(d, leuSite) {
       const score = Math.min(100, Math.max(0, Math.round(d.fit_score || 0)));
       const sinais = (d.sinais_de_compra || []).map(s => `<span class="tag tag-orange">${s}</span>`).join('');
@@ -228,6 +226,7 @@
           </div>
         </div>`;
     }
+
     function copiar() {
       const txt = document.getElementById('msg-text')?.innerText;
       if (txt) navigator.clipboard.writeText(txt).catch(() => {});
